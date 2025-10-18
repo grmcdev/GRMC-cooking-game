@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Minecraft-inspired color palette */
+    --background: 40 20% 12%;
+    --foreground: 40 10% 95%;
+
+    --card: 35 25% 18%;
+    --card-foreground: 40 10% 95%;
+
+    --popover: 35 25% 18%;
+    --popover-foreground: 40 10% 95%;
+
+    /* Emerald green (grass block) */
+    --primary: 140 65% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Lava orange */
+    --secondary: 16 90% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Stone gray */
+    --muted: 0 0% 35%;
+    --muted-foreground: 0 0% 75%;
+
+    /* Gold accent */
+    --accent: 45 100% 51%;
+    --accent-foreground: 35 25% 18%;
+
+    /* Red for alerts */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 35 15% 25%;
+    --input: 35 20% 22%;
+    --ring: 140 65% 42%;
+
+    --radius: 0.125rem;
+
+    /* Game-specific colors */
+    --craft-brown: 30 35% 28%;
+    --diamond-cyan: 180 100% 50%;
+    --redstone: 0 100% 50%;
+    --wood: 35 55% 35%;
+    --stone-light: 0 0% 45%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(140 65% 42%), hsl(140 65% 52%));
+    --gradient-lava: linear-gradient(135deg, hsl(16 90% 55%), hsl(25 95% 60%));
+    --gradient-gold: linear-gradient(135deg, hsl(45 100% 51%), hsl(50 100% 61%));
+    
+    /* Shadows */
+    --shadow-block: 0 4px 0 0 rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 6px 0 0 rgba(0, 0, 0, 0.4);
+    
+    /* Animations */
+    --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    overflow: hidden;
+  }
+  
+  /* Minecraft-style button effects */
+  .pixel-button {
+    position: relative;
+    transform: translateY(0);
+    box-shadow: var(--shadow-block);
+    transition: all 0.1s ease;
+  }
+  
+  .pixel-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+  
+  .pixel-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Pixel borders */
+  .pixel-border {
+    border: 3px solid;
+    border-image: repeating-linear-gradient(
+      90deg,
+      currentColor 0,
+      currentColor 3px,
+      transparent 3px,
+      transparent 6px
+    ) 3;
+  }
+}
+
+@layer components {
+  .game-panel {
+    @apply bg-card border-2 border-border p-4;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+  }
+  
+  .recipe-card {
+    @apply bg-wood border-2 border-stone-light p-3 cursor-pointer;
+    transition: transform 0.2s var(--transition-bounce);
+  }
+  
+  .recipe-card:hover {
+    transform: scale(1.05) translateY(-4px);
+  }
+}
