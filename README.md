@@ -1,168 +1,325 @@
-# Gordon's Blocky Kitchen Brigade
+# Gordon's Minecraft Nightmares
 
-A retro-leaning browser management game inspired by Overcooked where you guide pixelated Gordon Ramsay through a Minecraft-style
-kitchen. Three escalating services (3, 4, and 4 minutes long) challenge you to clear specific score targets by completing
-Minecraft-inspired recipes before their order timers expire. The kitchen supports mouse clicks and mobile taps.
+A fast-paced browser-based kitchen management game where you guide Chef Gordon through a chaotic Minecraft-inspired kitchen. Race against the clock to complete customer orders, manage multiple cooking stations, and chase high scores across 10 escalating levels. Built with React, TypeScript, and integrated with Solana blockchain for token-gated gameplay and in-game economy.
 
-## Game loop
+## 🎮 What Is This Game?
 
-- **Grab ingredients** from the supply crates on the left wall.
-- **Prep** anything that needs chopping on the cutting boards.
-- **Cook** items on the matching stove type (skillet or cauldron) until they hit the cooked stage.
-- **Plate and serve** finished ingredients at the plating counter to fill customer orders. Clear every ingredient on a ticket to
-  bank the recipe's point value before its personal timer runs out.
-- **Keep moving!** Wandering zombie sous-chef adds ambience with random groans while you chase high scores.
+Gordon's Minecraft Nightmares is a time-management cooking game inspired by titles like Overcooked, featuring:
+- **Pixelated chef and zombie characters** with retro sprite animations
+- **10 challenging levels** with increasing difficulty and score targets
+- **Minecraft-inspired recipes** requiring strategic ingredient management
+- **GRMC token integration** for access control and in-game currency
+- **Chef Coins economy** with swap functionality between GRMC and Chef Coins
+- **Global leaderboards** to compete with other players
+- **Responsive controls** optimized for both desktop and mobile play
 
-The project uses the Phaser 3 engine to deliver a Unity-like scene flow within the constraints of a lightweight web build, so it
-remains easy to run locally while still providing a structured engine-driven experience.
+## 🎯 Game Objectives
 
-## Levels & scoring
+Your mission is to complete customer orders before time runs out by preparing the correct ingredients and earning enough points to meet each level's target score.
 
-- **Level 1 – Tutorial Service (3 minutes, goal: 32 pts):** Serve one easy, one medium, and one hard recipe to learn the flow.
-- **Level 2 – Dinner Rush (4 minutes, goal: 100 pts):** Maintain a steady rhythm as overlapping tickets demand quick multitasking.
-- **Level 3 – Chef Showdown (4 minutes, goal: 130 pts):** Keep every station humming to break the final score threshold and view
-  the BigRigDev thank-you message while future content is still in development.
+### Level Structure
 
-Recipe difficulty determines its value: easy dishes award 6 points, medium dishes give 10 points, and hard dishes deliver 16
-points. Clearing a level requires meeting or exceeding its point target before time expires.
+The game features 10 progressively challenging levels:
 
-## Running locally
+- **Level 1-2 (Easy)**: 3-minute services with 25-35 point targets. Perfect for learning the basics.
+- **Level 3-4 (Easy-Medium)**: 4-minute services with 45-60 point targets. Multiple orders at once.
+- **Level 5-6 (Medium)**: 5-minute services with 80-100 point targets. Fast-paced multitasking required.
+- **Level 7-8 (Medium-Hard)**: 6-minute services with 120-150 point targets. Expert station management needed.
+- **Level 9-10 (Hard)**: 7-8 minute services with 180-250 point targets. Master every technique to succeed.
 
-1. Clone or download this repository.
-2. Open `index.html` in any modern desktop or mobile browser. No build step is required.
-3. Tap or click stations to direct Gordon around the kitchen and push your service score as high as possible before time expires.
+### Recipe Scoring
 
-## How players access the live game
+- **Easy recipes**: 6 points – Simple ingredients, minimal prep
+- **Medium recipes**: 10 points – Multiple steps, requires chopping and cooking
+- **Hard recipes**: 16 points – Complex workflows, precise timing needed
 
-When the bundle is hosted on your site with the GRMC gate enabled, the player experience follows these steps:
+## 🍳 How to Play
 
-1. **Click the "Play" link/button on your website.** Open the game in a new browser tab so it can request wallet access without pop-up blockers interfering.
-2. **Wallet prompt appears immediately.** The fullscreen gate (powered by `wallet-gate.js`) lists the supported Solana wallets and explains that GRMC ownership is required.
-3. **Player connects their wallet.** After selecting Phantom, Solflare, Backpack, or another adapter, the wallet asks for permission to share the public key with the page.
-4. **GRMC balance is verified.** The gate queries the configured RPC endpoint for SPL token accounts that match your GRMC mint address and confirms the player meets the minimum balance policy.
-5. **Access granted or denied.**
-   - If the balance requirement is satisfied, the overlay fades out, Phaser boots, and the kitchen loads Level 1.
-   - If the wallet lacks GRMC, the overlay shows a friendly denial message and optional links where the player can acquire tokens before retrying.
-6. **Play the three-level campaign.** With Gordon on the floor, players use mouse clicks or taps to prep ingredients, cook recipes, and chase each level's score target. Completing Level 3 triggers the in-development finale message from BigRigDev.
+### Core Gameplay Loop
 
-## Hosting on your website
+1. **Check Active Orders** – View customer tickets at the top showing required ingredients and remaining time
+2. **Grab Ingredients** – Click ingredient crates on the left wall to pick up raw items
+3. **Prep Ingredients** – Use cutting boards to chop items that need preparation
+4. **Cook Items** – Place ingredients on skillets or cauldrons to transform them into cooked versions
+5. **Plate and Serve** – Bring completed ingredients to the plating counter to fulfill orders
+6. **Repeat** – Keep the workflow moving to complete as many orders as possible before time expires
 
-Because the project is a static HTML/JS/CSS bundle, you can deploy it with any static host:
+### Kitchen Stations
 
-- **Traditional web servers:** Copy the repository contents to the public directory of Apache, Nginx, IIS, etc. Ensure the files are
-  served over HTTPS for best mobile compatibility.
-- **Static site platforms:** Drop the files into Netlify, Vercel, Cloudflare Pages, GitHub Pages, or similar. Point the platform at the
-  repository (or a deployment branch) and configure the build command to `None` so the files are shipped as-is.
-- **Self-hosted object storage/CDN:** Upload to an S3-compatible bucket, enable static-site mode, and map your domain via DNS.
+Your kitchen contains several station types, each serving a specific purpose:
 
-Whichever route you choose, the entry point is `index.html`. If you later introduce routing, configure the host to redirect unknown
-paths back to that file so Phaser can boot correctly.
+#### Ingredient Crates
+- Located on the left wall
+- Click to grab a random ingredient needed for current orders
+- Always contains items you need – no wasted picks
 
-## Adding leaderboards
+#### Cutting Boards (2 stations)
+- Transform raw ingredients into chopped versions
+- Click with a raw ingredient in hand to start chopping
+- Progress bar fills automatically – no button mashing needed
+- Click again when ready to pick up the chopped ingredient
 
-Keeping per-level leaderboards requires a small backend or serverless function that can store scores. A minimal architecture looks like:
+#### Cooking Stations
+- **Skillets (2 stations)**: For frying and sautéing ingredients
+- **Cauldrons (2 stations)**: For brewing and boiling ingredients
+- Match ingredients to the correct cooking method
+- Ingredients transform from chopped → cooked automatically
+- Watch for completion to avoid overcooking
 
-1. **API endpoint:** Create a `/scores` endpoint (REST or GraphQL) that supports `POST` for submitting `{ playerName, levelId, score }`
-   and `GET` for retrieving the top entries per level. Serverless functions (Netlify Functions, Cloudflare Workers, AWS Lambda) keep
-   this lightweight.
-2. **Persistence layer:** Use a managed database such as Firebase Realtime Database, Supabase/Postgres, or Fauna. Store level ID,
-   player name/handle, score, and timestamp. Add indexes on `(levelId, score)` so you can fetch the top N scores quickly.
-3. **Client integration:** Extend `game.js` to hit the `/scores` endpoint when a service ends. Fetch and render the current leaderboard
-   in a HUD panel or modal. Cache responses client-side so the UI remains responsive between network calls.
-4. **Anti-cheat considerations:** Require authenticated users (email/password, OAuth, or wallet-based login), validate scores on the
-   server (e.g., ensure duration matches the level's timer), and rate-limit submissions.
+#### Plating Counter (2 stations)
+- Final stop for completed ingredients
+- Click to deliver an ingredient that matches an active order
+- Orders auto-complete when all required ingredients are delivered
+- Points are awarded immediately upon order completion
 
-## Connecting the GRMC Solana token
+### Controls
 
-To tie the GRMC memecoin into the game economy and create demand:
+- **Mouse/Trackpad**: Click any station to interact
+- **Touch**: Tap stations directly on mobile devices
+- **Strategy**: Plan your route – walking between stations takes time!
 
-- **Wallet gating:** Require players to connect a Solana wallet via libraries like `@solana/web3.js` and `@solana/wallet-adapter`. Offer
-  cosmetic rewards or access to special events for wallets holding a threshold of GRMC tokens.
-- **On-chain rewards:** Emit GRMC token drops when players complete weekly challenges or place on the leaderboard. Use a backend to sign
-  transactions or integrate with custodial services that can send tokens securely.
-- **In-game shop:** Introduce a cosmetics or boost store where purchases are denominated in GRMC. Process payments through Solana smart
-  contracts or an off-chain order flow that settles on-chain.
-- **Token sinks:** Offer limited-time events, kitchen themes, or premium levels that consume GRMC to enter, ensuring ongoing token
-  utility.
+### What You Can Do
 
-### GRMC holder-only access
+✅ Pick up ingredients from crates  
+✅ Chop raw ingredients on cutting boards  
+✅ Cook chopped ingredients on appropriate stations  
+✅ Plate cooked ingredients to complete orders  
+✅ Work on multiple orders simultaneously  
+✅ Restart levels to improve your score  
 
-If you want the game to be playable *only* by wallets that currently hold GRMC, you will need a few concrete pieces of
-information and infrastructure:
+### What You Can't Do
 
-1. **Token metadata:** Share the GRMC mint address, decimals, and (optionally) the minimum balance that should unlock access.
-   Without that data the client cannot determine which token account to inspect or how much constitutes "holding".
-2. **Preferred Solana RPC endpoint:** Provide an RPC URL (Helius, Triton, QuickNode, or your own node). The client/ backend will
-   query it to fetch token balances. If you expect high traffic, budget for a dedicated plan so rate limits do not block players.
-3. **Wallet adapter configuration:** Decide which wallets must be supported (Phantom, Solflare, Backpack, etc.) so the
-   `@solana/wallet-adapter` layer can be configured ahead of time.
-4. **Access policy:** Confirm whether access is gated on *any* GRMC balance, a minimum token amount, or ownership of a specific
-   NFT receipt. This drives the logic the backend will enforce.
+❌ Rush cooking/chopping – progress bars fill at fixed rates  
+❌ Carry multiple ingredients at once – hands can only hold one item  
+❌ Skip prep steps – raw ingredients can't be cooked directly  
+❌ Use wrong cooking stations – ingredients require specific methods  
+❌ Pause the timer during levels (but you can view it between levels)  
 
-With those inputs the flow works like this:
+### Pro Tips
 
-1. Player loads the site and is presented with a "Connect Wallet" prompt before gameplay initializes.
-2. After the wallet connects, the client requests the list of SPL token accounts for that wallet and filters them for the GRMC
-   mint. (You can do this directly in the browser or via a thin backend proxy to keep your RPC key private.)
-3. If the balance meets your access policy, unlock the Phaser boot sequence; otherwise show a friendly modal explaining that GRMC
-   is required to play and link to an exchange or mint page.
-4. Optionally, repeat the balance check periodically (e.g., every few minutes) to ensure the player keeps holding the minimum.
+- **Prioritize expiring orders** – Orders with low time remaining should be completed first
+- **Batch similar tasks** – Chop multiple items before starting to cook
+- **Learn station layouts** – Efficient movement is key to high scores
+- **Watch for patterns** – Recipes often share common ingredients
+- **Use all stations** – Don't let cutting boards or stoves sit idle
 
-When you are ready to ship, supply the above metadata, RPC endpoint, and policy so the gating hook can be wired into
-`index.html` / `game.js` alongside the existing wallet-connected leaderboard code path.
+## 🪙 Token Economy
 
-#### Configuring the live gate in this build
+### GRMC Access Token
 
-This repository now includes a gate overlay (`wallet-gate.js`) that blocks Phaser from starting until the connecting wallet
-proves it holds GRMC. To make it production-ready:
+This game requires GRMC (Gordon Ramsay Meme Coin) tokens on the Solana blockchain for access:
 
-1. Open [`index.html`](./index.html) and update `window.GRMC_GATE_CONFIG.mintAddress` with the actual GRMC SPL token mint.
-2. Replace the default RPC endpoint if you have a preferred Solana provider (Helius, QuickNode, Triton, etc.).
-3. Adjust `minTokenBalance` if holding any fraction of GRMC should unlock play (set to `0.000001` for "any amount").
-4. (Optional) Set `window.GRMC_GATE_CONFIG.autoConnectTrusted = false` if you do **not** want the page to auto-detect previously
-   approved wallets on load.
-5. Upload the updated bundle to your host. When players click the link on your website, the new tab will immediately show the
-   wallet prompt, validate the GRMC balance, and only then boot the kitchen.
+1. **Connect Your Wallet** – Link a Solana wallet (Phantom, Solflare, etc.) on the main menu
+2. **Verify GRMC Balance** – System checks that you hold the minimum required GRMC tokens
+3. **Gain Access** – With sufficient balance, all game features unlock
+4. **Maintain Balance** – Balance is checked periodically during gameplay
 
-#### Backend & converter configuration
+**Minimum Balance**: 1 GRMC token required to play
 
-This repository ships with a lightweight Express backend (`backend/serverless.js`) that tracks ChefCoins and handles GRMC↔ChefCoins
-swaps plus on-chain purchase verification. To run it locally:
+### Chef Coins (In-Game Currency)
 
-1. Copy [`backend/.env.example`](./backend/.env.example) to `backend/.env` and fill in the GRMC mint, optional RPC URL, and
-   treasury key material. The developer wallet address defaults to `9Ctm5fCGoLrdXVZAkdKNBZnkf3YF5qD4Ejjdge4cmaWX`.
-2. Install dependencies (`npm install`) and start both the backend and static web server with `npm run dev` (or `npm run dev:api`
-   if you are hosting the frontend elsewhere).
-3. In [`index.html`](./index.html) update `window.GRMC_GATE_CONFIG.apiBase` to point at your backend URL (for example,
-   `http://localhost:8787` during development) and ensure `mintAddress` matches the `GRMC_MINT` environment variable. You can also
-   tune `swapTaxBps`, `minSwapAmount`, and `devWalletAddress` from the same config block.
+Earn Chef Coins by completing levels, which can be used for:
 
-Conversions run at a 1:1 rate with a configurable tax expressed in basis points. Players pay normal Solana network fees when they
-sign transfers in their wallet.
+- **Purchasing power-ups** in the in-game shop (coming soon)
+- **Unlocking cosmetics** and chef customizations (coming soon)
+- **Swapping to GRMC** via the Transfer page at configurable exchange rates
 
-### Wallet-connected leaderboard flow
+### Currency Transfer
 
-1. Add a persistent **Connect Wallet** button to the HTML overlay so desktop and mobile players can authenticate with Phantom,
-   Solflare, Backpack, or other Solana wallets via the wallet adapter.
-2. When a run ends, request the player sign a nonce and submit `{ levelId, score, runDuration, signature }` to your backend. The
-   backend validates the signature against the player's public key before accepting the score.
-3. Store scores in a fast database for instant refresh, then optionally batch the day's top entries onto an on-chain Solana
-   program (PDA) so fans and tournament organizers can independently audit leaderboards.
-4. Expose both views in-game: an immediate feed pulled from the database and a "verified" tab that reads the PDA so players can
-   see which scores are anchored on-chain.
+Navigate to the **Transfer** page to:
+- **Convert GRMC → Chef Coins**: Swap your Solana tokens for in-game currency
+- **Convert Chef Coins → GRMC**: Exchange earned currency back to blockchain tokens
+- View your current balances of both currencies
+- Track conversion rates and transaction history
 
-### GRMC-powered extras
+## 🏆 Leaderboards
 
-- **Cosmetic storefront:** Serve a JSON catalog of skins/emotes priced in GRMC. When a player buys an item, have the backend build a
-  transaction transferring the token amount to the treasury for the player to sign.
-- **Premium events:** Gate special weekend levels or score-chasing tournaments behind a GRMC entry fee and distribute prizes via a
-  Solana program.
-- **Holder boosts:** Detect token balances when the wallet connects and grant in-game perks (e.g., +10% score multiplier) to wallets
-  meeting a threshold.
+Compete globally by submitting your best scores:
 
-See [`BLOCKCHAIN_INTEGRATION.md`](./BLOCKCHAIN_INTEGRATION.md) for a deeper blueprint that blends off-chain responsiveness with
-verifiable on-chain checkpoints, plus operational tips (custodial wallets, compliance, analytics) to keep the experience smooth.
+- **Per-Level Rankings** – See how you stack up on each individual level
+- **Wallet Integration** – Scores tied to your Solana wallet address
+- **Custom Usernames** – Set your player name when first signing up
+- **Live Updates** – Leaderboard refreshes to show latest top performers
+- **Score Verification** – All submissions validated server-side to prevent cheating
 
-When adding wallet support, host over HTTPS, follow Solana best practices for signing/transaction handling, and communicate clearly how
-player data and tokens are used. Pair the token integration with marketing beats (weekly tournaments, collaboration drops) to keep
-interest high.
+Access leaderboards from the main menu or after completing any level.
+
+## 🚀 Running Locally
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or similar package manager
+- A Solana wallet (Phantom recommended) for testing token features
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <YOUR_GIT_URL>
+cd <YOUR_PROJECT_NAME>
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+The game will open at `http://localhost:8080` (or similar). Connect your wallet and ensure you have GRMC tokens to test the full experience.
+
+### Environment Variables
+
+The game connects to Lovable Cloud (Supabase) automatically. Key environment variables are managed through the `.env` file:
+
+- `VITE_SUPABASE_URL` – Backend API endpoint
+- `VITE_SUPABASE_PUBLISHABLE_KEY` – Public authentication key
+- `VITE_SUPABASE_PROJECT_ID` – Project identifier
+
+These are pre-configured and should not require manual changes.
+
+## 🌐 Deploying to Production
+
+### Option 1: Lovable Publish (Recommended)
+
+1. Open your project in the Lovable editor
+2. Click the **Publish** button in the top right
+3. Your game deploys automatically to `yourproject.lovable.app`
+4. Share the link – players can start playing immediately
+
+### Option 2: Custom Domain
+
+1. In Lovable, navigate to **Project → Settings → Domains**
+2. Click **Connect Domain**
+3. Follow DNS setup instructions for your domain provider
+4. Access your game at your custom URL
+
+*Note: Custom domains require a paid Lovable plan*
+
+### Option 3: Self-Host
+
+Export to GitHub and deploy to any static hosting platform:
+
+- **Vercel**: Connect repository, deploy automatically on push
+- **Netlify**: Drag-and-drop build folder or link repository  
+- **Cloudflare Pages**: Connect Git, configure build settings
+- **AWS S3 + CloudFront**: Upload build files, configure distribution
+
+For all platforms:
+- Build command: `npm run build`
+- Output directory: `dist`
+- Node version: 18+
+
+### Blockchain Considerations
+
+When hosting, ensure:
+- ✅ Site served over **HTTPS** (required for wallet connections)
+- ✅ **CORS configured** properly if using custom backend
+- ✅ **RPC endpoints** have sufficient rate limits for your traffic
+- ✅ **Wallet adapters** bundled correctly in production build
+
+## 🔧 Technical Stack
+
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS with custom design system
+- **UI Components**: Radix UI + shadcn/ui
+- **Blockchain**: Solana Web3.js, Wallet Adapter
+- **Backend**: Lovable Cloud (Supabase) - PostgreSQL, Auth, Edge Functions
+- **State Management**: React Context + TanStack Query
+- **Routing**: React Router v6
+
+## 📁 Project Structure
+
+```
+src/
+├── components/          # React components
+│   ├── GameHeader.tsx      # Timer, score, level display
+│   ├── Kitchen.tsx         # Main game board with stations
+│   ├── Station.tsx         # Individual cooking station
+│   ├── RecipeCard.tsx      # Order ticket display
+│   ├── MainMenu.tsx        # Level selection screen
+│   ├── WalletButton.tsx    # Solana wallet connector
+│   └── ui/                 # shadcn component library
+├── pages/              # Route pages
+│   ├── Index.tsx          # Main game page
+│   ├── Shop.tsx           # In-game store (WIP)
+│   ├── Transfer.tsx       # GRMC/Chef Coin swaps
+│   └── Auth.tsx           # Login/signup
+├── hooks/              # Custom React hooks
+│   ├── useCookingMechanics.ts  # Core game logic
+│   ├── usePlayerProfile.ts     # User data management
+│   ├── useGRMCBalance.ts       # Token balance checking
+│   └── useLeaderboard.ts       # Score submission
+├── contexts/           # React contexts
+│   ├── AuthContext.tsx    # User authentication
+│   └── WalletContext.tsx  # Solana wallet state
+├── data/               # Game configuration
+│   ├── recipes.ts         # Recipe definitions
+│   └── levels.ts          # Level configurations
+└── types/              # TypeScript definitions
+    └── game.ts            # Game state interfaces
+```
+
+## 🎨 Game Mechanics Deep Dive
+
+### Order Management
+
+- New orders spawn periodically based on level difficulty
+- Each order has an independent countdown timer
+- Maximum active orders varies by level (1-4 simultaneous orders)
+- Failed orders (time expired) disappear but don't penalize score
+- Completing orders awards points and clears kitchen space
+
+### Ingredient States
+
+Every ingredient follows a state progression:
+
+1. **Raw** – Fresh from the crate, not yet prepared
+2. **Chopped** – Processed on cutting board (if needed)
+3. **Cooked** – Transformed via skillet or cauldron (if needed)
+4. **Plated** – Delivered to complete order
+
+Some ingredients skip steps (e.g., items that don't need cooking), but you must always follow the required sequence.
+
+### Station Cooldowns
+
+- Cutting boards and cooking stations have automatic progress timers
+- Timers cannot be accelerated – plan ahead!
+- You cannot interrupt an in-progress station
+- Stations can only process one item at a time
+
+### Victory Conditions
+
+Each level completes when:
+- ✅ Target score reached **OR**
+- ❌ Time expires (shows game over if score insufficient)
+
+Three-star ratings (planned feature) will reward:
+- ⭐ Meeting target score
+- ⭐⭐ Exceeding target by 25%
+- ⭐⭐⭐ Exceeding target by 50%
+
+## 🤝 Contributing
+
+This project is built with Lovable. To contribute:
+
+1. **Via Lovable**: Open the [project](https://lovable.dev/projects/d9c8224b-9174-4371-b911-5f4ea1e73609) and start prompting for changes
+2. **Via Git**: Clone repository, make changes, push to trigger auto-deploy
+3. **Via GitHub**: Edit files directly in browser, commit changes
+
+Changes sync automatically between Lovable and GitHub.
+
+## 📝 License
+
+MIT License - Feel free to remix, modify, and build upon this game!
+
+## 🙏 Credits
+
+- **Game Design**: Inspired by Overcooked and Cooking Mama
+- **Art Style**: Minecraft aesthetic with custom pixel art
+- **Blockchain**: Powered by Solana
+- **Built With**: [Lovable](https://lovable.dev) - AI-powered full-stack platform
+
+---
+
+**Ready to Cook?** Connect your wallet, grab those ingredients, and show the world your culinary skills! 👨‍🍳🔥

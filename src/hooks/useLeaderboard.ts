@@ -18,6 +18,15 @@ export const useLeaderboard = () => {
       try {
         const walletAddress = publicKey.toString();
 
+        // Get username from player profile
+        const { data: profileData } = await supabase
+          .from('player_profiles')
+          .select('username')
+          .eq('wallet_address', walletAddress)
+          .single();
+
+        const username = profileData?.username || null;
+
         // Check if entry exists
         const { data: existing } = await supabase
           .from('leaderboards')
@@ -34,6 +43,7 @@ export const useLeaderboard = () => {
               .update({
                 score,
                 run_duration: runDuration,
+                username,
               })
               .eq('wallet_address', walletAddress)
               .eq('level_id', levelId);
@@ -59,6 +69,7 @@ export const useLeaderboard = () => {
               level_id: levelId,
               score,
               run_duration: runDuration,
+              username,
             });
 
           if (error) throw error;

@@ -1,18 +1,27 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { WalletButton } from "@/components/WalletButton";
+import { WalletLinkPrompt } from "@/components/WalletLinkPrompt";
 import { LeaderboardModal } from "@/components/LeaderboardModal";
 import { useGRMCBalance } from "@/hooks/useGRMCBalance";
-import { Play, Trophy } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePlayerProfile } from "@/hooks/usePlayerProfile";
+import { UsernameModal } from "@/components/UsernameModal";
+import { Play, Trophy, ShoppingCart, ArrowLeftRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { LEVELS } from "@/data/levels";
 
 interface MainMenuProps {
   onStartGame: (level: number) => void;
 }
 
 export const MainMenu = ({ onStartGame }: MainMenuProps) => {
+  const navigate = useNavigate();
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const { hasAccess, connected, loading } = useGRMCBalance();
+  const { user, signOut } = useAuth();
+  const { profile, needsUsername, createProfile } = usePlayerProfile();
 
   const handleStartGame = (level: number) => {
     if (!connected) {
@@ -34,6 +43,9 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <WalletLinkPrompt />
+      <UsernameModal open={needsUsername} onSubmit={createProfile} />
+      
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-10 text-8xl animate-bounce">🥕</div>
@@ -43,9 +55,19 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
       </div>
       
       <div className="game-panel bg-craft-brown/95 backdrop-blur-sm max-w-2xl w-full relative z-10">
-        {/* Wallet Connection */}
-        <div className="absolute -top-4 right-4">
+        {/* Wallet Connection and Sign Out */}
+        <div className="absolute -top-4 right-4 flex gap-2">
           <WalletButton />
+          {user && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => signOut()}
+              className="!px-3 !py-2"
+            >
+              Sign Out
+            </Button>
+          )}
         </div>
 
         {/* Title */}
@@ -64,18 +86,40 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
             <p className="text-sm text-foreground">with Chef Gordon Ramsay</p>
             <span className="text-lg">🧟</span>
           </div>
+          {profile?.username && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Playing as: <span className="text-primary font-semibold">{profile.username}</span>
+            </p>
+          )}
         </div>
         
-        {/* Leaderboard Button */}
-        <div className="mb-6">
+        {/* Action Buttons */}
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
           <Button
-            variant="gold"
+            variant="outline"
             size="lg"
-            className="w-full"
             onClick={() => setShowLeaderboard(true)}
           >
             <Trophy className="w-5 h-5 mr-2" />
-            VIEW LEADERBOARDS
+            Leaderboard
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/shop')}
+          >
+            <ShoppingCart className="w-5 h-5 mr-2" />
+            Shop
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/transfer')}
+          >
+            <ArrowLeftRight className="w-5 h-5 mr-2" />
+            Transfer
           </Button>
         </div>
 
@@ -107,34 +151,39 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
         )}
 
         {/* Level selection */}
-        <div className="space-y-3 mb-6">
-          <LevelButton
-            level={1}
-            title="Tutorial Service"
-            duration="3 minutes"
-            target="32 points"
-            difficulty="easy"
-            onStart={() => handleStartGame(1)}
-            disabled={!connected || !hasAccess || loading}
-          />
-          <LevelButton
-            level={2}
-            title="Dinner Rush"
-            duration="4 minutes"
-            target="100 points"
-            difficulty="medium"
-            onStart={() => handleStartGame(2)}
-            disabled={!connected || !hasAccess || loading}
-          />
-          <LevelButton
-            level={3}
-            title="Chef Showdown"
-            duration="4 minutes"
-            target="130 points"
-            difficulty="hard"
-            onStart={() => handleStartGame(3)}
-            disabled={!connected || !hasAccess || loading}
-          />
+        <div className="space-y-2 mb-6 max-h-[400px] overflow-y-auto pr-2">
+          {LEVELS.map((level) => {
+            const titles = [
+              "Tutorial Service",
+              "Dinner Rush", 
+              "Chef Showdown",
+              "Speed Challenge",
+              "Chaos Kitchen",
+              "Master Chef",
+              "Elite Service",
+              "Legendary Chef",
+              "Ultimate Trial",
+              "Gordon's Gauntlet"
+            ];
+            
+            const difficulties: ('easy' | 'medium' | 'hard')[] = [
+              'easy', 'easy', 'medium', 'medium', 'medium',
+              'hard', 'hard', 'hard', 'hard', 'hard'
+            ];
+            
+            return (
+              <LevelButton
+                key={level.level}
+                level={level.level}
+                title={titles[level.level - 1]}
+                duration={`${Math.floor(level.duration / 60)} min`}
+                target={`${level.targetScore} pts`}
+                difficulty={difficulties[level.level - 1]}
+                onStart={() => handleStartGame(level.level)}
+                disabled={!connected || !hasAccess || loading}
+              />
+            );
+          })}
         </div>
         
         {/* Footer */}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MainMenu } from "@/components/MainMenu";
 import { GameHeader } from "@/components/GameHeader";
 import { Kitchen } from "@/components/Kitchen";
@@ -182,37 +183,43 @@ const Index = () => {
   };
 
   if (!gameState.isPlaying && gameState.level === 0) {
-    return <MainMenu onStartGame={startGame} />;
+    return (
+      <ProtectedRoute>
+        <MainMenu onStartGame={startGame} />
+      </ProtectedRoute>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <GameHeader
-        timeLeft={gameState.timeRemaining}
-        score={gameState.score}
-        targetScore={gameState.targetScore}
-        level={gameState.level}
-      />
-      
-      <Kitchen 
-        orders={gameState.orders}
-        stations={gameState.stations}
-        onStationClick={handleStationClick}
-      />
-      
-      <PlayerHand ingredient={playerHand} />
-      
-      {showGameOver && (
-        <GameOverModal
-          level={gameState.level}
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <GameHeader
+          timeLeft={gameState.timeRemaining}
           score={gameState.score}
           targetScore={gameState.targetScore}
-          success={gameState.score >= gameState.targetScore}
-          onRestart={handleRestart}
-          onMenu={handleMenu}
+          level={gameState.level}
         />
-      )}
-    </div>
+        
+        <Kitchen 
+          orders={gameState.orders}
+          stations={gameState.stations}
+          onStationClick={handleStationClick}
+        />
+        
+        <PlayerHand ingredient={playerHand} />
+        
+        {showGameOver && (
+          <GameOverModal
+            level={gameState.level}
+            score={gameState.score}
+            targetScore={gameState.targetScore}
+            success={gameState.score >= gameState.targetScore}
+            onRestart={handleRestart}
+            onMenu={handleMenu}
+          />
+        )}
+      </div>
+    </ProtectedRoute>
   );
 };
 

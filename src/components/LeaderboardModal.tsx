@@ -13,7 +13,7 @@ interface LeaderboardModalProps {
 interface LeaderboardEntry {
   id: string;
   wallet_address: string;
-  player_name: string | null;
+  username: string | null;
   level_id: number;
   score: number;
   run_duration: number;
@@ -125,7 +125,7 @@ export const LeaderboardModal = ({ open, onOpenChange }: LeaderboardModalProps) 
                         </div>
                         <div className="flex-1">
                           <div className="font-bold text-foreground">
-                            {entry.player_name || formatWalletAddress(entry.wallet_address)}
+                            {entry.username || formatWalletAddress(entry.wallet_address)}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {formatWalletAddress(entry.wallet_address)}

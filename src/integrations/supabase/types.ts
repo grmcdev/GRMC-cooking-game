@@ -14,32 +14,182 @@ export type Database = {
   }
   public: {
     Tables: {
+      chef_coins_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          transaction_type: string
+          wallet_address: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          transaction_type: string
+          wallet_address: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          transaction_type?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       leaderboards: {
         Row: {
           created_at: string | null
           id: string
           level_id: number
-          player_name: string | null
           run_duration: number
           score: number
+          username: string | null
           wallet_address: string
         }
         Insert: {
           created_at?: string | null
           id?: string
           level_id: number
-          player_name?: string | null
           run_duration: number
           score: number
+          username?: string | null
           wallet_address: string
         }
         Update: {
           created_at?: string | null
           id?: string
           level_id?: number
-          player_name?: string | null
           run_duration?: number
           score?: number
+          username?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      player_profiles: {
+        Row: {
+          chef_coins_balance: number
+          created_at: string | null
+          daily_chef_coins_earned: number
+          id: string
+          last_daily_reset: string | null
+          total_chef_coins_earned: number
+          updated_at: string | null
+          username: string
+          wallet_address: string
+        }
+        Insert: {
+          chef_coins_balance?: number
+          created_at?: string | null
+          daily_chef_coins_earned?: number
+          id?: string
+          last_daily_reset?: string | null
+          total_chef_coins_earned?: number
+          updated_at?: string | null
+          username: string
+          wallet_address: string
+        }
+        Update: {
+          chef_coins_balance?: number
+          created_at?: string | null
+          daily_chef_coins_earned?: number
+          id?: string
+          last_daily_reset?: string | null
+          total_chef_coins_earned?: number
+          updated_at?: string | null
+          username?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      shop_purchases: {
+        Row: {
+          cost: number
+          created_at: string | null
+          id: string
+          item_id: string
+          item_name: string
+          quantity: number | null
+          wallet_address: string
+        }
+        Insert: {
+          cost: number
+          created_at?: string | null
+          id?: string
+          item_id: string
+          item_name: string
+          quantity?: number | null
+          wallet_address: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          item_name?: string
+          quantity?: number | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      swap_requests: {
+        Row: {
+          amount: number
+          created_at: string | null
+          error_message: string | null
+          id: string
+          processed_at: string | null
+          status: string
+          swap_type: string
+          transaction_signature: string | null
+          wallet_address: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          processed_at?: string | null
+          status?: string
+          swap_type: string
+          transaction_signature?: string | null
+          wallet_address: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          processed_at?: string | null
+          status?: string
+          swap_type?: string
+          transaction_signature?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      wallet_auth: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string
           wallet_address?: string
         }
         Relationships: []
@@ -49,7 +199,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_chef_coins: {
+        Args: {
+          p_amount: number
+          p_daily_limit?: number
+          p_description: string
+          p_wallet_address: string
+        }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
+      }
+      get_user_wallet: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      owns_wallet: {
+        Args: { _wallet_address: string }
+        Returns: boolean
+      }
+      reset_daily_chef_coins: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      spend_chef_coins: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_wallet_address: string
+        }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

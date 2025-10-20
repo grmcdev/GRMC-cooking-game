@@ -19,8 +19,16 @@ export const WalletContextProvider = ({ children }: WalletContextProviderProps) 
   // Use mainnet-beta for production, devnet for testing
   const network = WalletAdapterNetwork.Mainnet;
   
-  // You can also provide a custom RPC endpoint
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  // Use a more reliable RPC endpoint - public endpoints often have rate limits
+  // You can replace this with your own RPC provider (Helius, QuickNode, Alchemy, etc.)
+  const endpoint = useMemo(() => {
+    // Try environment variable first, fallback to public RPC
+    const customRpc = import.meta.env.VITE_SOLANA_RPC_URL;
+    if (customRpc) return customRpc;
+    
+    // Use a more reliable public endpoint
+    return 'https://solana-mainnet.g.alchemy.com/v2/demo';
+  }, []);
 
   const wallets = useMemo(
     () => [
