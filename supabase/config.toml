@@ -1,1 +1,10 @@
 project_id = "mmmnghihshsjuawwcplj"
+
+[functions.check-grmc-balance]
+verify_jwt = false
+
+[functions.process-chef-to-grmc-swaps]
+verify_jwt = false
+
+[functions.process-grmc-to-chef-swaps]
+verify_jwt = false

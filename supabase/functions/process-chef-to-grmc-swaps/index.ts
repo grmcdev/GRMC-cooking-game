@@ -16,6 +16,21 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate swap processor secret
+  const authSecret = Deno.env.get('SWAP_PROCESSOR_SECRET');
+  const providedSecret = req.headers.get('x-swap-secret');
+
+  if (providedSecret !== authSecret) {
+    console.error('Unauthorized swap processing attempt');
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
   try {
     console.log('Processing Chef Coin → GRMC swap requests...');
 
@@ -85,7 +100,7 @@ Deno.serve(async (req) => {
           treasuryTokenAccount,
           playerTokenAccount,
           treasuryKeypair.publicKey,
-          afterTax * 1_000_000, // Convert to token decimals (assuming 6 decimals)
+          afterTax * 1_000_000_000, // Convert to token decimals (GRMC has 9 decimals)
           [],
           TOKEN_PROGRAM_ID
         );

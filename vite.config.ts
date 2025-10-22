@@ -14,5 +14,20 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@solana/wallet-adapter-react',
+      '@solana/wallet-adapter-react-ui',
+      '@solana/wallet-adapter-wallets',
+      '@solana/wallet-adapter-base',
+      '@solana/web3.js',
+    ],
+    esbuildOptions: {
+      target: 'esnext',
+    },
   },
 }));

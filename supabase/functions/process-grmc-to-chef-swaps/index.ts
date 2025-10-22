@@ -3,7 +3,7 @@ import { Connection, PublicKey } from 'https://esm.sh/@solana/web3.js@1.98.0';
 import { getAssociatedTokenAddress, getAccount } from 'https://esm.sh/@solana/spl-token@0.3.11';
 
 const GRMC_MINT_ADDRESS = '6Q7EMLd1BL15TaJ5dmXa2xBoxEU4oj3MLRQd5sCpotuK';
-const TREASURY_WALLET = '9Ctm5fCGoLrdXVZAkdKNBZnkf3YF5qD4Ejjdge4cmaWX';
+const TREASURY_WALLET = '12GCzXY2QecJrW7rwLoxMDSDjhgzaC4DsN9oL3Xw9xG9';
 const TAX_RATE = 0.1; // 10% tax
 const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
 
@@ -15,6 +15,21 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate swap processor secret
+  const authSecret = Deno.env.get('SWAP_PROCESSOR_SECRET');
+  const providedSecret = req.headers.get('x-swap-secret');
+
+  if (providedSecret !== authSecret) {
+    console.error('Unauthorized swap processing attempt');
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   try {
