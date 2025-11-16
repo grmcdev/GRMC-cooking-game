@@ -3,6 +3,15 @@ import { RECIPES } from "./recipes";
 
 export const LEVELS: LevelConfig[] = [
   {
+    level: 0,
+    duration: 300, // 5 minutes for tutorial
+    targetScore: 20,
+    maxActiveOrders: 1,
+    availableRecipes: [
+      RECIPES.bread, // Simple recipe for tutorial
+    ]
+  },
+  {
     level: 1,
     duration: 180, // 3 minutes
     targetScore: 32,
@@ -20,9 +29,9 @@ export const LEVELS: LevelConfig[] = [
     maxActiveOrders: 3,
     availableRecipes: [
       RECIPES.bread,
-      RECIPES.carrotStew,
+      RECIPES.beetrootSoup,
       RECIPES.mushroomSoup,
-      RECIPES.cookedFish,
+      RECIPES.cookedSalmon,
       RECIPES.goldenApple
     ]
   },
@@ -33,11 +42,11 @@ export const LEVELS: LevelConfig[] = [
     maxActiveOrders: 4,
     availableRecipes: [
       RECIPES.bread,
-      RECIPES.carrotStew,
+      RECIPES.beetrootSoup,
       RECIPES.mushroomSoup,
-      RECIPES.cookedFish,
+      RECIPES.cookedCod,
       RECIPES.goldenApple,
-      RECIPES.enderPearl
+      RECIPES.cake
     ]
   },
   {
@@ -46,11 +55,11 @@ export const LEVELS: LevelConfig[] = [
     targetScore: 180,
     maxActiveOrders: 4,
     availableRecipes: [
-      RECIPES.carrotStew,
+      RECIPES.beetrootSoup,
       RECIPES.mushroomSoup,
-      RECIPES.cookedFish,
+      RECIPES.cookedSalmon,
       RECIPES.goldenApple,
-      RECIPES.enderPearl
+      RECIPES.cake
     ]
   },
   {
@@ -60,9 +69,9 @@ export const LEVELS: LevelConfig[] = [
     maxActiveOrders: 5,
     availableRecipes: [
       RECIPES.mushroomSoup,
-      RECIPES.cookedFish,
+      RECIPES.cookedCod,
       RECIPES.goldenApple,
-      RECIPES.enderPearl
+      RECIPES.rabbitStew
     ]
   },
   {
@@ -72,9 +81,9 @@ export const LEVELS: LevelConfig[] = [
     maxActiveOrders: 5,
     availableRecipes: [
       RECIPES.mushroomSoup,
-      RECIPES.cookedFish,
+      RECIPES.cookedSalmon,
       RECIPES.goldenApple,
-      RECIPES.enderPearl
+      RECIPES.cake
     ]
   },
   {
@@ -83,9 +92,9 @@ export const LEVELS: LevelConfig[] = [
     targetScore: 320,
     maxActiveOrders: 6,
     availableRecipes: [
-      RECIPES.cookedFish,
+      RECIPES.cookedCod,
       RECIPES.goldenApple,
-      RECIPES.enderPearl
+      RECIPES.rabbitStew
     ]
   },
   {
@@ -94,9 +103,9 @@ export const LEVELS: LevelConfig[] = [
     targetScore: 400,
     maxActiveOrders: 6,
     availableRecipes: [
-      RECIPES.cookedFish,
+      RECIPES.cookedSalmon,
       RECIPES.goldenApple,
-      RECIPES.enderPearl
+      RECIPES.cake
     ]
   },
   {
@@ -106,7 +115,7 @@ export const LEVELS: LevelConfig[] = [
     maxActiveOrders: 7,
     availableRecipes: [
       RECIPES.goldenApple,
-      RECIPES.enderPearl
+      RECIPES.rabbitStew
     ]
   },
   {
@@ -116,7 +125,7 @@ export const LEVELS: LevelConfig[] = [
     maxActiveOrders: 8,
     availableRecipes: [
       RECIPES.goldenApple,
-      RECIPES.enderPearl
+      RECIPES.cake
     ]
   }
 ];

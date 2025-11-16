@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { StationState, IngredientState, OrderTicket } from "@/types/game";
 import { RECIPES } from "@/data/recipes";
 import { toast } from "sonner";
@@ -6,32 +6,54 @@ import { toast } from "sonner";
 interface UseCookingMechanicsProps {
   orders: OrderTicket[];
   onOrderComplete: (orderId: string, points: number) => void;
+  initialStations?: StationState[];
 }
 
-export const useCookingMechanics = ({ orders, onOrderComplete }: UseCookingMechanicsProps) => {
-  const [playerHand, setPlayerHand] = useState<IngredientState | undefined>();
-  const [stations, setStations] = useState<StationState[]>(initializeStations());
+// Initialize kitchen stations - exported for use in game start
+export function initializeStations(): StationState[] {
+  return [
+    // Ingredient crates (left side)
+    { id: 'crate-1', type: 'crate', isActive: false },
+    { id: 'crate-2', type: 'crate', isActive: false },
+    { id: 'crate-3', type: 'crate', isActive: false },
+    
+    // Cutting boards (top center)
+    { id: 'cutting-1', type: 'cutting', isActive: false },
+    { id: 'cutting-2', type: 'cutting', isActive: false },
+    
+    // Cooking stations (top right)
+    { id: 'skillet-1', type: 'skillet', isActive: false },
+    { id: 'cauldron-1', type: 'cauldron', isActive: false },
+    
+    // Plating counter (bottom center)
+    { id: 'plating-1', type: 'plating', isActive: false },
+  ];
+}
 
-  // Initialize kitchen stations
-  function initializeStations(): StationState[] {
-    return [
-      // Ingredient crates (left side)
-      { id: 'crate-1', type: 'crate', isActive: false },
-      { id: 'crate-2', type: 'crate', isActive: false },
-      { id: 'crate-3', type: 'crate', isActive: false },
-      
-      // Cutting boards (top center)
-      { id: 'cutting-1', type: 'cutting', isActive: false },
-      { id: 'cutting-2', type: 'cutting', isActive: false },
-      
-      // Cooking stations (top right)
-      { id: 'skillet-1', type: 'skillet', isActive: false },
-      { id: 'cauldron-1', type: 'cauldron', isActive: false },
-      
-      // Plating counter (bottom center)
-      { id: 'plating-1', type: 'plating', isActive: false },
-    ];
-  }
+export const useCookingMechanics = ({ orders, onOrderComplete, initialStations }: UseCookingMechanicsProps) => {
+  const [playerHand, setPlayerHand] = useState<IngredientState | undefined>();
+  // Initialize with stations if provided and non-empty, otherwise create new ones
+  const [stations, setStations] = useState<StationState[]>(() => 
+    initialStations && initialStations.length > 0 ? initialStations : initializeStations()
+  );
+
+  // Use refs to prevent callback recreation on every render
+  const stationsRef = useRef(stations);
+  const playerHandRef = useRef(playerHand);
+  const ordersRef = useRef(orders);
+
+  // Update refs whenever values change
+  useEffect(() => {
+    stationsRef.current = stations;
+  }, [stations]);
+
+  useEffect(() => {
+    playerHandRef.current = playerHand;
+  }, [playerHand]);
+
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
 
   // Get random ingredient from current orders
   const getRandomIngredient = useCallback((): IngredientState | null => {
@@ -58,12 +80,24 @@ export const useCookingMechanics = ({ orders, onOrderComplete }: UseCookingMecha
 
   // Handle station clicks
   const handleStationClick = useCallback((stationId: string) => {
-    const station = stations.find(s => s.id === stationId);
-    if (!station) return;
+    console.log('🎯 handleStationClick called:', stationId);
+    console.log('📋 Current state:', {
+      playerHand: playerHandRef.current,
+      stationsCount: stationsRef.current.length,
+      ordersCount: ordersRef.current.length
+    });
+
+    const station = stationsRef.current.find(s => s.id === stationId);
+    if (!station) {
+      console.log('❌ Station not found:', stationId);
+      return;
+    }
+    console.log('🏪 Station found:', station.type, station);
 
     // CRATE: Pick up new ingredient
     if (station.type === 'crate') {
-      if (playerHand) {
+      console.log('📦 Crate interaction');
+      if (playerHandRef.current) {
         toast.error("Hands are full!", { description: "Finish with current ingredient first" });
         return;
       }
@@ -81,7 +115,8 @@ export const useCookingMechanics = ({ orders, onOrderComplete }: UseCookingMecha
 
     // CUTTING BOARD: Place ingredient to chop
     if (station.type === 'cutting') {
-      if (!playerHand) {
+      console.log('🔪 Cutting board interaction');
+      if (!playerHandRef.current) {
         // Pick up from station
         if (station.ingredient) {
           setPlayerHand(station.ingredient);
@@ -93,35 +128,44 @@ export const useCookingMechanics = ({ orders, onOrderComplete }: UseCookingMecha
         return;
       }
       
-      if (!playerHand.needsChopping || playerHand.type !== 'raw') {
+      if (!playerHandRef.current.needsChopping || playerHandRef.current.type !== 'raw') {
         toast.error("Doesn't need chopping!", { description: "Try a different station" });
         return;
       }
       
       // Place on cutting board
+      const ingredientToPlace = playerHandRef.current;
       setStations(prev => prev.map(s => 
-        s.id === stationId ? { ...s, ingredient: playerHand, progress: 0, isActive: true } : s
+        s.id === stationId ? { ...s, ingredient: ingredientToPlace, progress: 0, isActive: true } : s
       ));
       setPlayerHand(undefined);
       
-      // Auto-chop after 2 seconds
-      setTimeout(() => {
+      // Gradual chopping progress
+      const progressInterval = setInterval(() => {
         setStations(prev => prev.map(s => {
           if (s.id === stationId && s.ingredient) {
-            const chopped: IngredientState = { ...s.ingredient, type: 'chopped' };
-            toast.success(`Chopped ${chopped.name}!`);
-            return { ...s, ingredient: chopped, progress: 100, isActive: false };
+            const newProgress = Math.min(100, (s.progress || 0) + 5);
+            
+            if (newProgress >= 100) {
+              clearInterval(progressInterval);
+              const chopped: IngredientState = { ...s.ingredient, type: 'chopped' };
+              toast.success(`Chopped ${chopped.name}!`);
+              return { ...s, ingredient: chopped, progress: 100, isActive: false };
+            }
+            
+            return { ...s, progress: newProgress };
           }
           return s;
         }));
-      }, 2000);
+      }, 100);
       
       return;
     }
 
     // COOKING STATIONS: Place ingredient to cook
     if (station.type === 'skillet' || station.type === 'cauldron') {
-      if (!playerHand) {
+      console.log('🔥 Cooking station interaction');
+      if (!playerHandRef.current) {
         // Pick up from station
         if (station.ingredient) {
           setPlayerHand(station.ingredient);
@@ -133,59 +177,68 @@ export const useCookingMechanics = ({ orders, onOrderComplete }: UseCookingMecha
         return;
       }
       
-      if (!playerHand.needsCooking) {
+      if (!playerHandRef.current.needsCooking) {
         toast.error("Doesn't need cooking!", { description: "Try plating it instead" });
         return;
       }
       
-      if (playerHand.cookMethod !== station.type) {
+      if (playerHandRef.current.cookMethod !== station.type) {
         toast.error("Wrong cooking station!", { 
-          description: `Use ${playerHand.cookMethod} instead` 
+          description: `Use ${playerHandRef.current.cookMethod} instead` 
         });
         return;
       }
       
-      if (playerHand.type === 'raw' && playerHand.needsChopping) {
+      if (playerHandRef.current.type === 'raw' && playerHandRef.current.needsChopping) {
         toast.error("Needs chopping first!", { description: "Use cutting board" });
         return;
       }
       
       // Place on stove
+      const ingredientToPlace = playerHandRef.current;
       setStations(prev => prev.map(s => 
-        s.id === stationId ? { ...s, ingredient: playerHand, progress: 0, isActive: true } : s
+        s.id === stationId ? { ...s, ingredient: ingredientToPlace, progress: 0, isActive: true } : s
       ));
       setPlayerHand(undefined);
       
-      // Auto-cook after 3 seconds
-      setTimeout(() => {
+      // Gradual cooking progress
+      const progressInterval = setInterval(() => {
         setStations(prev => prev.map(s => {
           if (s.id === stationId && s.ingredient) {
-            const cooked: IngredientState = { ...s.ingredient, type: 'cooked' };
-            toast.success(`Cooked ${cooked.name}!`);
-            return { ...s, ingredient: cooked, progress: 100, isActive: false };
+            const newProgress = Math.min(100, (s.progress || 0) + 3.33);
+            
+            if (newProgress >= 100) {
+              clearInterval(progressInterval);
+              const cooked: IngredientState = { ...s.ingredient, type: 'cooked' };
+              toast.success(`Cooked ${cooked.name}!`);
+              return { ...s, ingredient: cooked, progress: 100, isActive: false };
+            }
+            
+            return { ...s, progress: newProgress };
           }
           return s;
         }));
-      }, 3000);
+      }, 100);
       
       return;
     }
 
     // PLATING: Complete ingredient for order
     if (station.type === 'plating') {
-      if (!playerHand) {
+      console.log('🍽️ Plating interaction');
+      if (!playerHandRef.current) {
         toast.error("Nothing to plate!", { description: "Pick up an ingredient first" });
         return;
       }
       
       // Check if ingredient is ready for plating
       const isReady = 
-        (!playerHand.needsChopping || playerHand.type !== 'raw') &&
-        (!playerHand.needsCooking || playerHand.type === 'cooked');
+        (!playerHandRef.current.needsChopping || playerHandRef.current.type !== 'raw') &&
+        (!playerHandRef.current.needsCooking || playerHandRef.current.type === 'cooked');
       
       if (!isReady) {
         toast.error("Not ready to plate!", { 
-          description: playerHand.needsChopping && playerHand.type === 'raw' 
+          description: playerHandRef.current.needsChopping && playerHandRef.current.type === 'raw' 
             ? "Needs chopping first" 
             : "Needs cooking first" 
         });
@@ -193,9 +246,9 @@ export const useCookingMechanics = ({ orders, onOrderComplete }: UseCookingMecha
       }
       
       // Find matching order
-      const matchingOrder = orders.find(order => 
+      const matchingOrder = ordersRef.current.find(order => 
         order.recipe.ingredients.some(ing => 
-          ing.id === playerHand.ingredientId && 
+          ing.id === playerHandRef.current!.ingredientId && 
           !order.completedIngredients.has(ing.id)
         )
       );
@@ -206,9 +259,10 @@ export const useCookingMechanics = ({ orders, onOrderComplete }: UseCookingMecha
       }
       
       // Mark ingredient as complete
-      matchingOrder.completedIngredients.add(playerHand.ingredientId);
+      const completedIngredient = playerHandRef.current;
+      matchingOrder.completedIngredients.add(completedIngredient.ingredientId);
       setPlayerHand(undefined);
-      toast.success(`Plated ${playerHand.name}!`, { description: "Ingredient complete" });
+      toast.success(`Plated ${completedIngredient.name}!`, { description: "Ingredient complete" });
       
       // Check if order is complete
       const allComplete = matchingOrder.recipe.ingredients.every(ing =>
@@ -221,7 +275,7 @@ export const useCookingMechanics = ({ orders, onOrderComplete }: UseCookingMecha
       
       return;
     }
-  }, [stations, playerHand, orders, getRandomIngredient, onOrderComplete]);
+  }, [getRandomIngredient, onOrderComplete]);
 
   return {
     playerHand,

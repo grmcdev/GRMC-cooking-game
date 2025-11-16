@@ -44,6 +44,14 @@ export interface StationState {
   isActive: boolean;
 }
 
+export interface ActiveBoost {
+  itemId: string;
+  itemName: string;
+  type: 'speed' | 'score' | 'time';
+  multiplier?: number;
+  endTime: number; // timestamp when boost expires
+}
+
 export interface GameState {
   level: number;
   score: number;
@@ -55,6 +63,7 @@ export interface GameState {
   isPaused: boolean;
   playerHand?: IngredientState;
   stations: StationState[];
+  activeBoosts: ActiveBoost[];
 }
 
 export interface LevelConfig {

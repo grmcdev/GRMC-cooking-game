@@ -76,7 +76,7 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     font-family: 'Press Start 2P', 'Courier New', monospace;
-    overflow: hidden;
+    overflow: auto;
   }
   
   /* Minecraft-style button effects */
@@ -124,4 +124,134 @@ All colors MUST be HSL.
   .recipe-card:hover {
     transform: scale(1.05) translateY(-4px);
   }
+}
+
+/* Walk animation for Gordon */
+@keyframes walk {
+  0%, 100% { background-position-x: 0; }
+  50% { background-position-x: -32px; }
+}
+
+/* Floating score animation */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-100px) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-200px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Screen shake animation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Confetti animation */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Shimmer animation for progress bars */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
+
+/* Responsive scaling for smaller resolutions */
+@media (max-height: 800px) {
+  /* Slightly reduce Gordon's size on smaller screens */
+  .gordon-character {
+    transform: scale(0.9);
+  }
+  
+  /* Reduce station overlay sizes */
+  .station-overlay {
+    transform: scale(0.9);
+  }
+}
+
+@media (max-height: 600px) {
+  /* Further reduction for very small screens */
+  .gordon-character {
+    transform: scale(0.75);
+  }
+  
+  .station-overlay {
+    transform: scale(0.85);
+  }
+  
+  /* Compact UI elements */
+  .game-header {
+    padding: 0.5rem;
+  }
+}
+
+/* Mobile landscape optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .game-header {
+    padding: 0.5rem 1rem;
+  }
+  
+  .game-panel {
+    font-size: 0.875rem;
+    padding: 0.75rem;
+  }
+}
+
+/* Portrait mode optimizations */
+@media (max-width: 768px) and (orientation: portrait) {
+  .gordon-character {
+    transform: scale(0.8);
+  }
+  
+  .station-button {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  
+  /* Touch targets larger in portrait */
+  button {
+    min-height: 44px;
+  }
+}
+
+/* Rotating phone animation for orientation prompt */
+@keyframes rotatePhone {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  50% { transform: rotate(90deg); }
+  75% { transform: rotate(80deg); }
+}
+
+.animate-rotate-phone {
+  animation: rotatePhone 2s ease-in-out infinite;
+}
+
+/* Smooth zoom transitions */
+.game-container {
+  transition: transform 0.3s ease-out;
 }

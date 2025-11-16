@@ -71,6 +71,75 @@ export type Database = {
         }
         Relationships: []
       }
+      player_inventory: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_name: string
+          item_type: string
+          quantity: number
+          updated_at: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_name: string
+          item_type: string
+          quantity?: number
+          updated_at?: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_name?: string
+          item_type?: string
+          quantity?: number
+          updated_at?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      player_level_progress: {
+        Row: {
+          best_score: number | null
+          best_time: number | null
+          completed: boolean | null
+          created_at: string | null
+          id: string
+          level_id: number
+          unlocked: boolean | null
+          updated_at: string | null
+          wallet_address: string
+        }
+        Insert: {
+          best_score?: number | null
+          best_time?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          id?: string
+          level_id: number
+          unlocked?: boolean | null
+          updated_at?: string | null
+          wallet_address: string
+        }
+        Update: {
+          best_score?: number | null
+          best_time?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          id?: string
+          level_id?: number
+          unlocked?: boolean | null
+          updated_at?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       player_profiles: {
         Row: {
           chef_coins_balance: number
@@ -104,6 +173,42 @@ export type Database = {
           updated_at?: string | null
           username?: string
           wallet_address?: string
+        }
+        Relationships: []
+      }
+      shop_items: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string | null
+          duration: number | null
+          icon: string
+          id: string
+          item_type: string
+          level_required: number
+          name: string
+        }
+        Insert: {
+          cost: number
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          icon: string
+          id: string
+          item_type: string
+          level_required?: number
+          name: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          icon?: string
+          id?: string
+          item_type?: string
+          level_required?: number
+          name?: string
         }
         Relationships: []
       }
@@ -212,18 +317,26 @@ export type Database = {
           success: boolean
         }[]
       }
-      get_user_wallet: {
-        Args: Record<PropertyKey, never>
-        Returns: string
+      get_user_wallet: { Args: never; Returns: string }
+      owns_wallet: { Args: { _wallet_address: string }; Returns: boolean }
+      purchase_shop_item: {
+        Args: { p_item_id: string; p_wallet_address: string }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
       }
-      owns_wallet: {
-        Args: { _wallet_address: string }
-        Returns: boolean
+      refund_failed_swap: {
+        Args: { p_swap_request_id: string }
+        Returns: {
+          error_message: string
+          new_balance: number
+          refund_amount: number
+          success: boolean
+        }[]
       }
-      reset_daily_chef_coins: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      reset_daily_chef_coins: { Args: never; Returns: undefined }
       spend_chef_coins: {
         Args: {
           p_amount: number
@@ -235,6 +348,10 @@ export type Database = {
           new_balance: number
           success: boolean
         }[]
+      }
+      unlock_next_level: {
+        Args: { p_current_level: number; p_wallet_address: string }
+        Returns: boolean
       }
     }
     Enums: {

@@ -19,17 +19,13 @@ export const WalletContextProvider = ({ children }: WalletContextProviderProps) 
   // Use mainnet-beta for production, devnet for testing
   const network = WalletAdapterNetwork.Mainnet;
   
-  // Use a more reliable RPC endpoint - public endpoints often have rate limits
-  // You can replace this with your own RPC provider (Helius, QuickNode, Alchemy, etc.)
+  // Use environment variable for RPC endpoint, fallback to public endpoint
   const endpoint = useMemo(() => {
-    // Try environment variable first, fallback to public RPC
-    const customRpc = import.meta.env.VITE_SOLANA_RPC_URL;
-    if (customRpc) return customRpc;
-    
-    // Use a more reliable public endpoint
-    return 'https://solana-mainnet.g.alchemy.com/v2/demo';
+    return import.meta.env.VITE_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
   }, []);
 
+  // Phantom and Solflare support both desktop (browser extensions) and mobile (deep linking)
+  // The wallet adapters automatically detect the platform and use appropriate connection methods
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter(),

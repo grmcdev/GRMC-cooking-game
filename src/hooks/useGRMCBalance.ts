@@ -1,74 +1,113 @@
 import { useState, useEffect } from "react";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey } from "@solana/web3.js";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 // GRMC Token Configuration
 const GRMC_MINT_ADDRESS = "6Q7EMLd1BL15TaJ5dmXa2xBoxEU4oj3MLRQd5sCpotuK";
-const GRMC_TREASURY_WALLET = "9Ctm5fCGoLrdXVZAkdKNBZnkf3YF5qD4Ejjdge4cmaWX";
+const GRMC_TREASURY_WALLET = "12GCzXY2QecJrW7rwLoxMDSDjhgzaC4DsN9oL3Xw9xG9";
 const MIN_GRMC_BALANCE = 1000; // Minimum balance required (0 = any amount)
 
 export const useGRMCBalance = () => {
-  const { connection } = useConnection();
   const { publicKey, connected } = useWallet();
   const [balance, setBalance] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
-  useEffect(() => {
+  const checkBalance = async (isManualRefresh = false) => {
     if (!connected || !publicKey) {
       setBalance(0);
       setHasAccess(false);
       return;
     }
 
-    const checkBalance = async () => {
-      setLoading(true);
-      try {
-        const mintPubkey = new PublicKey(GRMC_MINT_ADDRESS);
+    setLoading(true);
+    try {
+      // Call the edge function instead of directly querying RPC
+      const { data, error } = await supabase.functions.invoke('check-grmc-balance', {
+        body: { walletAddress: publicKey.toString() }
+      });
 
-        // Get token accounts for the wallet
-        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
-          mint: mintPubkey,
+      if (error) throw error;
+
+      const totalBalance = data?.balance || 0;
+      
+      setBalance(totalBalance);
+      setHasAccess(totalBalance >= MIN_GRMC_BALANCE);
+      setHasError(false);
+      setRetryCount(0);
+
+      if (isManualRefresh && totalBalance < MIN_GRMC_BALANCE) {
+        toast.error("Insufficient GRMC Balance", {
+          description: `You need at least ${MIN_GRMC_BALANCE} GRMC tokens to play.`,
         });
-
-        let totalBalance = 0;
-        tokenAccounts.value.forEach((accountInfo) => {
-          const amount = accountInfo.account.data.parsed.info.tokenAmount.uiAmount;
-          totalBalance += amount || 0;
-        });
-
-        setBalance(totalBalance);
-        setHasAccess(totalBalance >= MIN_GRMC_BALANCE);
-
-        if (totalBalance < MIN_GRMC_BALANCE) {
-          toast.error("Insufficient GRMC Balance", {
-            description: `You need at least ${MIN_GRMC_BALANCE} GRMC tokens to play.`,
-          });
-        }
-      } catch (error) {
-        console.error("Error checking GRMC balance:", error);
-        toast.error("Error checking token balance", {
-          description: "Please try reconnecting your wallet.",
-        });
-        setHasAccess(false);
-      } finally {
-        setLoading(false);
       }
-    };
+      
+      if (isManualRefresh) {
+        toast.success("Balance Updated", {
+          description: `${totalBalance.toFixed(2)} GRMC`,
+        });
+      }
+    } catch (error) {
+      console.error("Error checking GRMC balance:", error);
+      
+      setHasError(true);
+      
+      if (isManualRefresh) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        toast.error("Error checking token balance", {
+          description: errorMessage,
+        });
+      }
+      
+      if (balance === 0) {
+        setHasAccess(false);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!connected || !publicKey) {
+      setBalance(0);
+      setHasAccess(false);
+      setHasError(false);
+      return;
+    }
 
     checkBalance();
 
-    // Re-check balance every 30 seconds
-    const interval = setInterval(checkBalance, 30000);
+    const getInterval = () => {
+      if (hasError) {
+        return Math.min(60000 * Math.pow(2, retryCount), 300000);
+      }
+      return 90000;
+    };
+
+    const interval = setInterval(() => {
+      checkBalance();
+      if (hasError) {
+        setRetryCount(prev => prev + 1);
+      }
+    }, getInterval());
+
     return () => clearInterval(interval);
-  }, [connection, publicKey, connected]);
+  }, [publicKey, connected, hasError, retryCount]);
+
+  const refetch = () => {
+    checkBalance(true);
+  };
 
   return {
     balance,
     loading,
     hasAccess,
+    hasError,
     connected,
     walletAddress: publicKey?.toString(),
+    refetch,
   };
 };

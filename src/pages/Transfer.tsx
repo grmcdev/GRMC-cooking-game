@@ -4,22 +4,40 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { usePlayerProfile } from "@/hooks/usePlayerProfile";
 import { useGRMCBalance } from "@/hooks/useGRMCBalance";
+import { useSwapProcessor } from "@/hooks/useSwapProcessor";
 import { ArrowLeft, ArrowLeftRight, Coins } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { 
+  TOKEN_PROGRAM_ID, 
+  getAssociatedTokenAddress, 
+  createTransferInstruction 
+} from "@solana/spl-token";
 
 export default function Transfer() {
   const navigate = useNavigate();
   const { profile } = usePlayerProfile();
   const { balance: grmc } = useGRMCBalance();
-  const { publicKey } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
+  
+  // Auto-process pending swaps in background
+  useSwapProcessor();
   const [grmc2ChefAmount, setGrmc2ChefAmount] = useState("");
   const [chef2GrmcAmount, setChef2GrmcAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
   const TAX_RATE = 0.1; // 10% tax
+  const GRMC_MINT = new PublicKey('6Q7EMLd1BL15TaJ5dmXa2xBoxEU4oj3MLRQd5sCpotuK');
+  const TREASURY_WALLET = new PublicKey('12GCzXY2QecJrW7rwLoxMDSDjhgzaC4DsN9oL3Xw9xG9');
+  
+  // Use environment variable for RPC endpoint, fallback to public endpoint
+  const connection = new Connection(
+    import.meta.env.VITE_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
+    'confirmed'
+  );
 
   const handleGRMCtoChef = async () => {
     const amount = parseFloat(grmc2ChefAmount);
@@ -28,36 +46,97 @@ export default function Transfer() {
       return;
     }
 
+    if (amount < 500 || amount > 8000) {
+      toast.error("Amount must be between 500 and 8000 GRMC");
+      return;
+    }
+
     if (amount > grmc) {
       toast.error("Insufficient GRMC balance");
       return;
     }
 
-    if (!publicKey || !profile?.wallet_address) {
+    if (!publicKey || !profile?.wallet_address || !signTransaction) {
       toast.error("Wallet not connected");
       return;
     }
 
     setLoading(true);
     try {
-      // Create swap request (simplified - you'd need actual Solana transaction here)
-      const { error } = await supabase.from('swap_requests').insert({
+      toast.info("Sending GRMC to treasury...");
+
+      // Get token accounts
+      const fromTokenAccount = await getAssociatedTokenAddress(
+        GRMC_MINT,
+        publicKey
+      );
+      
+      const toTokenAccount = await getAssociatedTokenAddress(
+        GRMC_MINT,
+        TREASURY_WALLET
+      );
+
+      // Convert to lamports (9 decimals for GRMC)
+      const amountLamports = Math.floor(amount * 1_000_000_000);
+
+      // Create transaction
+      const transaction = new Transaction().add(
+        createTransferInstruction(
+          fromTokenAccount,
+          toTokenAccount,
+          publicKey,
+          amountLamports,
+          [],
+          TOKEN_PROGRAM_ID
+        )
+      );
+
+      // Get recent blockhash
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
+
+      // Sign and send
+      const signed = await signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signed.serialize());
+      
+      toast.info("Confirming transaction...");
+      
+      // Wait for confirmation
+      await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight,
+      });
+
+      // Create swap request with transaction signature - processed automatically
+      const { error: dbError } = await supabase.from('swap_requests').insert({
         wallet_address: profile.wallet_address,
         swap_type: 'grmc_to_chef',
         amount: Math.floor(amount),
-        status: 'pending'
+        status: 'pending',
+        transaction_signature: signature
       });
 
-      if (error) throw error;
+      if (dbError) {
+        // Handle unique constraint violation for duplicate transactions
+        if (dbError.code === '23505') {
+          toast.error("This transaction has already been processed.");
+        } else {
+          throw dbError;
+        }
+        return;
+      }
 
-      toast.success("Swap request created", {
-        description: `Converting ${amount} GRMC to Chef Coins (after 10% tax)`
+      toast.success("GRMC sent to treasury!", {
+        description: `You will receive ${Math.floor(amount * 0.9)} Chef Coins within 2-3 minutes.`,
+        duration: 5000
       });
       setGrmc2ChefAmount("");
     } catch (error) {
       console.error('Swap error:', error);
       toast.error("Swap failed", {
-        description: "Please try again later"
+        description: error instanceof Error ? error.message : "Please try again later"
       });
     } finally {
       setLoading(false);
@@ -100,10 +179,19 @@ export default function Transfer() {
         status: 'pending'
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle constraint violations
+        if (error.code === '23514') {
+          toast.error("Invalid swap amount. Must be between 500 and 8000.");
+        } else {
+          throw error;
+        }
+        return;
+      }
 
-      toast.success("Swap request created", {
-        description: `Converting ${amount} Chef Coins to GRMC (after 10% tax)`
+      toast.success("Swap request created!", {
+        description: `You will receive ${Math.floor(amount * 0.9)} GRMC within 2-3 minutes.`,
+        duration: 5000
       });
       setChef2GrmcAmount("");
     } catch (error) {

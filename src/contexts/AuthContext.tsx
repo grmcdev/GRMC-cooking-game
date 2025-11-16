@@ -106,6 +106,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('wallet_address', publicKey.toBase58())
         .single();
 
+      if (existing && existing.user_id === user.id) {
+        // Wallet already linked to this user
+        setWalletLinked(true);
+        return true;
+      }
+
       if (existing && existing.user_id !== user.id) {
         toast.error('This wallet is already linked to another account');
         return false;

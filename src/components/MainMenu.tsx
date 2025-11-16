@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { WalletButton } from "@/components/WalletButton";
 import { WalletLinkPrompt } from "@/components/WalletLinkPrompt";
 import { LeaderboardModal } from "@/components/LeaderboardModal";
@@ -55,21 +56,6 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
       </div>
       
       <div className="game-panel bg-craft-brown/95 backdrop-blur-sm max-w-2xl w-full relative z-10">
-        {/* Wallet Connection and Sign Out */}
-        <div className="absolute -top-4 right-4 flex gap-2">
-          <WalletButton />
-          {user && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => signOut()}
-              className="!px-3 !py-2"
-            >
-              Sign Out
-            </Button>
-          )}
-        </div>
-
         {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-destructive mb-2 drop-shadow-lg">
@@ -90,6 +76,21 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
             <p className="mt-2 text-xs text-muted-foreground">
               Playing as: <span className="text-primary font-semibold">{profile.username}</span>
             </p>
+          )}
+        </div>
+
+        {/* Wallet Connection and Sign Out */}
+        <div className="mb-4 grid grid-cols-1 gap-2">
+          <WalletButton />
+          {user && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => signOut()}
+              className="h-auto w-full"
+            >
+              Sign Out
+            </Button>
           )}
         </div>
         
@@ -151,40 +152,43 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
         )}
 
         {/* Level selection */}
-        <div className="space-y-2 mb-6 max-h-[400px] overflow-y-auto pr-2">
-          {LEVELS.map((level) => {
-            const titles = [
-              "Tutorial Service",
-              "Dinner Rush", 
-              "Chef Showdown",
-              "Speed Challenge",
-              "Chaos Kitchen",
-              "Master Chef",
-              "Elite Service",
-              "Legendary Chef",
-              "Ultimate Trial",
-              "Gordon's Gauntlet"
-            ];
-            
-            const difficulties: ('easy' | 'medium' | 'hard')[] = [
-              'easy', 'easy', 'medium', 'medium', 'medium',
-              'hard', 'hard', 'hard', 'hard', 'hard'
-            ];
-            
-            return (
-              <LevelButton
-                key={level.level}
-                level={level.level}
-                title={titles[level.level - 1]}
-                duration={`${Math.floor(level.duration / 60)} min`}
-                target={`${level.targetScore} pts`}
-                difficulty={difficulties[level.level - 1]}
-                onStart={() => handleStartGame(level.level)}
-                disabled={!connected || !hasAccess || loading}
-              />
-            );
-          })}
-        </div>
+        <ScrollArea className="h-[400px] mb-6 pr-2">
+          <div className="grid grid-cols-2 gap-2">
+            {LEVELS.map((level) => {
+              const titles = [
+                "Tutorial Service",
+                "Dinner Rush", 
+                "Chef Showdown",
+                "Speed Challenge",
+                "Chaos Kitchen",
+                "Master Chef",
+                "Elite Service",
+                "Legendary Chef",
+                "Ultimate Trial",
+                "Gordon's Gauntlet",
+                "Nightmare Mode"
+              ];
+              
+              const difficulties: ('easy' | 'medium' | 'hard')[] = [
+                'easy', 'easy', 'easy', 'medium', 'medium', 'medium',
+                'hard', 'hard', 'hard', 'hard', 'hard'
+              ];
+              
+              return (
+                <LevelButton
+                  key={level.level}
+                  level={level.level}
+                  title={titles[level.level]}
+                  duration={`${Math.floor(level.duration / 60)} min`}
+                  target={`${level.targetScore} pts`}
+                  difficulty={difficulties[level.level]}
+                  onStart={() => handleStartGame(level.level)}
+                  disabled={!connected || !hasAccess || loading}
+                />
+              );
+            })}
+          </div>
+        </ScrollArea>
         
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground">
@@ -218,21 +222,19 @@ const LevelButton = ({ level, title, duration, target, difficulty, onStart, disa
     <button
       onClick={onStart}
       disabled={disabled}
-      className={`w-full pixel-button bg-wood hover:bg-wood/80 border-4 ${difficultyColors[difficulty]} p-4 text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`w-full pixel-button bg-wood hover:bg-wood/80 border-2 ${difficultyColors[difficulty]} p-3 text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed`}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-accent text-xl font-bold">LEVEL {level}</span>
-            <span className="text-xs text-muted-foreground uppercase">{difficulty}</span>
-          </div>
-          <h3 className="text-foreground font-bold mb-2">{title}</h3>
-          <div className="flex gap-4 text-xs text-muted-foreground">
-            <span>⏱️ {duration}</span>
-            <span>🎯 {target}</span>
-          </div>
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-accent text-sm font-bold">LVL {level}</span>
+          <Play className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
         </div>
-        <Play className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
+        <h3 className="text-foreground font-bold text-xs mb-1 line-clamp-1">{title}</h3>
+        <div className="flex gap-2 text-[10px] text-muted-foreground">
+          <span>⏱️ {duration}</span>
+          <span>🎯 {target}</span>
+        </div>
+        <span className="text-[9px] text-muted-foreground uppercase mt-1">{difficulty}</span>
       </div>
     </button>
   );

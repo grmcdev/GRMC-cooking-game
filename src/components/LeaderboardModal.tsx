@@ -94,19 +94,19 @@ export const LeaderboardModal = ({ open, onOpenChange }: LeaderboardModalProps) 
         </DialogHeader>
 
         <Tabs defaultValue="1" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-wood/50">
-            <TabsTrigger value="1" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              LEVEL 1
-            </TabsTrigger>
-            <TabsTrigger value="2" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              LEVEL 2
-            </TabsTrigger>
-            <TabsTrigger value="3" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              LEVEL 3
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 bg-wood/50 h-auto gap-1 p-1">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
+              <TabsTrigger 
+                key={level}
+                value={level.toString()} 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-xs py-2"
+              >
+                LVL {level}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {[1, 2, 3].map((level) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
             <TabsContent key={level} value={level.toString()} className="mt-4">
               {loading ? (
                 <div className="text-center py-8 text-muted-foreground">

@@ -1,5 +1,5 @@
 import { Recipe } from "@/types/game";
-import { Clock, Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -8,72 +8,98 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard = ({ recipe, timeRemaining, completedIngredients }: RecipeCardProps) => {
-  const progress = completedIngredients.size / recipe.ingredients.length;
+  const progress = (completedIngredients.size / recipe.ingredients.length) * 100;
   const isUrgent = timeRemaining <= 15;
   
-  const difficultyColor = {
-    easy: 'bg-primary',
-    medium: 'bg-secondary',
-    hard: 'bg-accent'
-  }[recipe.difficulty];
-  
-  const difficultyStars = {
-    easy: 1,
-    medium: 2,
-    hard: 3
-  }[recipe.difficulty];
+  const timeColor = timeRemaining <= 5 ? 'stroke-red-600' : timeRemaining <= 15 ? 'stroke-yellow-500' : 'stroke-green-500';
+  const circumference = 2 * Math.PI * 36;
+  const timeProgress = (timeRemaining / recipe.timeLimit) * 100;
   
   return (
-    <div className={`recipe-card relative ${isUrgent ? 'animate-pulse border-destructive' : ''}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className={`${difficultyColor} text-background px-2 py-1 text-xs flex items-center gap-1`}>
-          {Array.from({ length: difficultyStars }).map((_, i) => (
-            <Star key={i} className="w-3 h-3 fill-current" />
-          ))}
-        </div>
-        <div className={`flex items-center gap-1 text-sm ${isUrgent ? 'text-destructive' : 'text-accent'}`}>
-          <Clock className="w-4 h-4" />
-          <span className="font-bold">{timeRemaining}s</span>
+    <div className={cn(
+      "relative bg-white rounded-lg p-4 shadow-2xl",
+      "border-4",
+      isUrgent ? "border-red-500 animate-pulse" : "border-gray-300",
+      "transform rotate-1",
+      "min-w-[220px] max-w-[220px]"
+    )}>
+      {/* Circular Timer */}
+      <div className="absolute -top-4 -right-4 z-10">
+        <div className="relative w-20 h-20">
+          <svg className="transform -rotate-90" viewBox="0 0 80 80">
+            <circle
+              cx="40"
+              cy="40"
+              r="36"
+              className={timeColor}
+              strokeWidth="8"
+              fill="white"
+              strokeDasharray={`${circumference} ${circumference}`}
+              strokeDashoffset={circumference - (timeProgress / 100) * circumference}
+              style={{ transition: 'stroke-dashoffset 0.5s' }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className={cn(
+              "text-2xl font-bold",
+              isUrgent && "text-red-600 animate-pulse"
+            )}>
+              {timeRemaining}s
+            </span>
+          </div>
         </div>
       </div>
-      
-      {/* Recipe name */}
-      <h3 className="text-foreground text-sm font-bold mb-2">{recipe.name}</h3>
-      
-      {/* Ingredients */}
-      <div className="space-y-1 mb-2">
+
+      {/* Urgent Banner */}
+      {isUrgent && (
+        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold animate-bounce shadow-lg">
+          URGENT!
+        </div>
+      )}
+
+      {/* Recipe Name */}
+      <h3 className="text-lg font-bold text-gray-800 mb-3 pr-16">
+        {recipe.name}
+      </h3>
+
+      {/* Ingredient Checklist */}
+      <div className="space-y-2 mb-3">
         {recipe.ingredients.map((ingredient) => {
-          const isCompleted = completedIngredients.has(ingredient.id);
+          const isComplete = completedIngredients?.has(ingredient.id);
           return (
             <div
               key={ingredient.id}
-              className={`flex items-center gap-2 text-xs p-1 border ${
-                isCompleted ? 'bg-primary/20 border-primary' : 'bg-muted/50 border-stone-light'
-              }`}
+              className={cn(
+                "flex items-center gap-2 p-2 rounded-md transition-all",
+                isComplete ? "bg-green-100 line-through opacity-50" : "bg-gray-50"
+              )}
             >
-              <span className="text-lg">{ingredient.icon}</span>
-              <span className={isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'}>
-                {ingredient.name}
-              </span>
-              {ingredient.needsChopping && <span className="text-xs">🔪</span>}
-              {ingredient.needsCooking && <span className="text-xs">🔥</span>}
+              <div className={cn(
+                "w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0",
+                isComplete ? "bg-green-500 border-green-600" : "bg-white border-gray-400"
+              )}>
+                {isComplete && <span className="text-white text-sm">✓</span>}
+              </div>
+              
+              <span className="text-3xl">{ingredient.icon}</span>
+              
+              <div className="flex-1 text-sm">
+                <div className="font-medium text-gray-700">{ingredient.name}</div>
+                <div className="text-xs text-gray-500">
+                  {ingredient.needsChopping && "✂️ Chop → "}
+                  {ingredient.needsCooking && `🔥 ${ingredient.cookMethod} → `}
+                  🍽️ Plate
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
-      
-      {/* Progress bar */}
-      <div className="w-full h-2 bg-muted border border-stone-light overflow-hidden">
-        <div
-          className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${progress * 100}%` }}
-        />
-      </div>
-      
-      {/* Points */}
-      <div className="absolute -top-2 -right-2 bg-accent text-craft-brown w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-background">
-        {recipe.points}
+
+      {/* Points Display */}
+      <div className="flex items-center justify-between border-t-2 border-dashed border-gray-300 pt-2">
+        <span className="text-sm text-gray-600">Reward:</span>
+        <span className="text-xl font-bold text-yellow-600">+{recipe.points} pts</span>
       </div>
     </div>
   );
