@@ -5,7 +5,7 @@ import { getAssociatedTokenAddress, getAccount } from 'https://esm.sh/@solana/sp
 const GRMC_MINT_ADDRESS = '6Q7EMLd1BL15TaJ5dmXa2xBoxEU4oj3MLRQd5sCpotuK';
 const TREASURY_WALLET = '12GCzXY2QecJrW7rwLoxMDSDjhgzaC4DsN9oL3Xw9xG9';
 const TAX_RATE = 0.1; // 10% tax
-const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
+const SOLANA_RPC = Deno.env.get('SOLANA_RPC_URL') || 'https://api.mainnet-beta.solana.com';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
